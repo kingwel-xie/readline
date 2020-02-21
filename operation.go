@@ -93,6 +93,14 @@ func (o *Operation) SetPrompt(s string) {
 	o.buf.SetPrompt(s)
 }
 
+func (o *Operation) OutChan() chan []rune {
+	return o.outchan
+}
+
+func (o *Operation) ErrChan() chan error {
+	return o.errchan
+}
+
 func (o *Operation) SetMaskRune(r rune) {
 	o.buf.SetMask(r)
 }
