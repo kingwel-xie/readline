@@ -1,10 +1,8 @@
 package readline
 
 import (
-	"fmt"
+	"reflect"
 	"testing"
-
-	"github.com/chzyer/test"
 )
 
 func rs(s [][]rune) []string {
@@ -24,16 +22,6 @@ func sr(s ...string) [][]rune {
 }
 
 func TestRetSegment(t *testing.T) {
-	defer test.New(t)
-	// a
-	// |- a1
-	// |--- a11
-	// |--- a12
-	// |- a2
-	// |--- a21
-	// b
-	// add
-	// adddomain
 	ret := []struct {
 		Segments [][]rune
 		Cands    [][]rune
@@ -50,20 +38,16 @@ func TestRetSegment(t *testing.T) {
 	}
 	for idx, r := range ret {
 		ret, pos := RetSegment(r.Segments, r.Cands, r.idx)
-		test.Equal(ret, r.Ret, fmt.Errorf("%v", idx))
-		test.Equal(pos, r.pos, fmt.Errorf("%v", idx))
+		if !reflect.DeepEqual(ret, r.Ret) {
+			t.Fatalf("%d: ret = %v, want %v", idx, rs(ret), rs(r.Ret))
+		}
+		if pos != r.pos {
+			t.Fatalf("%d: pos = %d, want %d", idx, pos, r.pos)
+		}
 	}
 }
 
 func TestSplitSegment(t *testing.T) {
-	defer test.New(t)
-	// a
-	// |- a1
-	// |--- a11
-	// |--- a12
-	// |- a2
-	// |--- a21
-	// b
 	ret := []struct {
 		Line     string
 		Pos      int
@@ -80,8 +64,12 @@ func TestSplitSegment(t *testing.T) {
 
 	for i, r := range ret {
 		ret, idx := SplitSegment([]rune(r.Line), r.Pos)
-		test.Equal(rs(ret), rs(r.Segments), fmt.Errorf("%v", i))
-		test.Equal(idx, r.Idx, fmt.Errorf("%v", i))
+		if !reflect.DeepEqual(rs(ret), rs(r.Segments)) {
+			t.Fatalf("%d: segments = %v, want %v", i, rs(ret), rs(r.Segments))
+		}
+		if idx != r.Idx {
+			t.Fatalf("%d: idx = %d, want %d", i, idx, r.Idx)
+		}
 	}
 }
 
@@ -91,8 +79,6 @@ type Tree struct {
 }
 
 func TestSegmentCompleter(t *testing.T) {
-	defer test.New(t)
-
 	tree := Tree{"", []Tree{
 		{"a", []Tree{
 			{"a1", []Tree{
@@ -130,13 +116,6 @@ func TestSegmentCompleter(t *testing.T) {
 		return ret
 	})
 
-	// a
-	// |- a1
-	// |--- a11
-	// |--- a12
-	// |- a2
-	// |--- a21
-	// b
 	ret := []struct {
 		Line  string
 		Pos   int
@@ -161,7 +140,11 @@ func TestSegmentCompleter(t *testing.T) {
 	}
 	for i, r := range ret {
 		newLine, length := s.Do([]rune(r.Line), r.Pos)
-		test.Equal(rs(newLine), rs(r.Ret), fmt.Errorf("%v", i))
-		test.Equal(length, r.Share, fmt.Errorf("%v", i))
+		if !reflect.DeepEqual(rs(newLine), rs(r.Ret)) {
+			t.Fatalf("%d: ret = %v, want %v", i, rs(newLine), rs(r.Ret))
+		}
+		if length != r.Share {
+			t.Fatalf("%d: share = %d, want %d", i, length, r.Share)
+		}
 	}
 }

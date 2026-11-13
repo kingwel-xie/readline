@@ -145,6 +145,13 @@ func (e *escapeKeyPair) Get2() (int, int, bool) {
 func readEscKey(r rune, reader *bufio.Reader) *escapeKeyPair {
 	p := escapeKeyPair{}
 	buf := bytes.NewBuffer(nil)
+	// CSI replies carry private markers before the payload ("?84;0;0c" for a
+	// DA query, ">84;0;0c" for a secondary one, "?1u" for kitty). Without
+	// skipping them the marker becomes the key type and the payload leaks
+	// into the input as plain keystrokes.
+	for r == '?' || r == '>' || r == '=' || r == '<' {
+		r, _, _ = reader.ReadRune()
+	}
 	for {
 		if r == ';' {
 		} else if unicode.IsNumber(r) {
