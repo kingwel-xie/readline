@@ -188,7 +188,18 @@ func (t *Terminal) ioloop() {
 			}
 			isEscape = true
 		case CharInterrupt, CharEnter, CharCtrlJ, CharDelete:
+			// The line ends here. A kick that arrived while the line was
+			// being consumed in the continuous-read mode is redundant — the
+			// read that served the line already did the work. Leaving it in
+			// the channel would start a fresh read that stays pending until
+			// the next keystroke, and a pending read shares the tty with any
+			// child that reads the terminal (a full-screen editor would then
+			// get only every other keystroke).
 			expectNextChar = false
+			select {
+			case <-t.kickChan:
+			default:
+			}
 			fallthrough
 		default:
 			t.outchan <- r
