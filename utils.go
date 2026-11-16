@@ -186,6 +186,14 @@ func escapeKey(r rune, reader *bufio.Reader) rune {
 			r = CharLineStart
 		case 'F':
 			r = CharLineEnd
+		case 'A': // application-cursor-mode (SS3) arrows: ESC O A/B/C/D
+			r = CharPrev
+		case 'B':
+			r = CharNext
+		case 'C':
+			r = CharForward
+		case 'D':
+			r = CharBackward
 		default:
 			reader.UnreadRune()
 		}
